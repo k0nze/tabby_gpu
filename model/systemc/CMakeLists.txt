@@ -10,6 +10,11 @@ find_package(SystemCLanguage CONFIG REQUIRED)
 
 add_executable(tabby_tlm_model
     src/main.cc
+    src/input_buffer.cc
+)
+
+target_include_directories(tabby_tlm_model PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
 target_link_libraries(tabby_tlm_model PRIVATE SystemC::systemc)
