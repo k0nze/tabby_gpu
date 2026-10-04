@@ -1,18 +1,25 @@
 #pragma once
 
+#include <tlm_core/tlm_2/tlm_generic_payload/tlm_gp.h>
+#include <tlm_utils/simple_target_socket.h>
+
 #include <cstddef>
-#include <cstdint>
+#include <systemc>
+#include <tlm>
 #include <vector>
 
 #include "buffer_interface.h"
 
-class InputBuffer : public BufferInterface {
+class InputBuffer : public sc_core::sc_module, public BufferInterface {
    public:
-    explicit InputBuffer(size_t size);
+    tlm_utils::simple_target_socket<InputBuffer> socket;
 
-    void write(uint64_t address, uint8_t value);
-    uint8_t read(uint64_t address);
+    InputBuffer(sc_core::sc_module_name name, size_t size);
+
+    void write(uint64_t address, uint8_t value) override;
+    uint8_t read(uint64_t address) override;
 
    private:
     std::vector<uint8_t> data_;
+    void b_transport(tlm::tlm_generic_payload& trans, sc_core::sc_time& delay);
 };

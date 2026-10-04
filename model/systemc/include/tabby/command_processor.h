@@ -1,14 +1,14 @@
 #pragma once
 
-#include "command_queue.h"
-#include "input_buffer.h"
+#include <tlm_utils/simple_initiator_socket.h>
 
-class CommandProcessor {
+#include <systemc>
+#include <tlm>
+
+class CommandProcessor : public sc_core::sc_module {
    public:
-    CommandProcessor(CommandQueue& cmd_queue, InputBuffer& input_buffer);
-    void process_next();
+    tlm_utils::simple_initiator_socket<CommandProcessor> socket;
+    SC_CTOR(CommandProcessor);
 
-   private:
-    CommandQueue& cmd_queue_;
-    InputBuffer& input_buffer_;
+    std::vector<uint8_t> read_bytes(uint64_t address, size_t length);
 };
