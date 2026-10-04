@@ -19,8 +19,20 @@ cd model/systemc
 mkdir build
 cd build
 cmake .. -GNinja
+./tabby_tlm_model
+```
+
+## Contribute
+
+### Pre-commit hooks
+
+Install and enable the formatting hook:
+
+```bash
+python3 -m pip install pre-commit
+pre-commit install
 ```
 
 ## TODOs
 
-- [ ] Pre-commit hooks
+- [x] Pre-commit hooks
