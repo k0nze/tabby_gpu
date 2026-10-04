@@ -46,5 +46,7 @@ std::vector<uint8_t> CommandProcessor::read_bytes(uint64_t address, size_t lengt
         SC_REPORT_ERROR("CommandProcessor", "TLM read failed");
     }
 
+    sc_core::wait(delay);
+
     return data;
 }

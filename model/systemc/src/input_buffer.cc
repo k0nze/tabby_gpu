@@ -54,7 +54,7 @@ void InputBuffer::b_transport(tlm::tlm_generic_payload& trans,
     }
 
     // check if access is out of bounds
-    if (address + length >= data_.size()) {
+    if (address >= data_.size() || length > data_.size() - address) {
         trans.set_response_status(tlm::TLM_ADDRESS_ERROR_RESPONSE);
         return;
     }
@@ -63,6 +63,10 @@ void InputBuffer::b_transport(tlm::tlm_generic_payload& trans,
         for (size_t i = 0; i < length; i++) {
             data[i] = read(address + i);
         }
+
+        const sc_core::sc_time time_per_byte(10, sc_core::SC_NS);
+        delay += time_per_byte * length;
+
     } else if (trans.is_write()) {
         for (size_t i = 0; i < length; i++) {
             write(address + i, data[i]);

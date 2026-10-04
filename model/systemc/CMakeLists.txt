@@ -14,6 +14,7 @@ add_executable(tabby_tlm_model
     src/vertex_2d_io.cc
     src/command_queue.cc
     src/command_processor.cc
+    src/tabby_tlm_model.cc
 )
 
 target_include_directories(tabby_tlm_model PRIVATE
