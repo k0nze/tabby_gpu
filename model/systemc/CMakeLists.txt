@@ -20,4 +20,4 @@ target_include_directories(tabby_tlm_model PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/include/tabby
 )
 
-target_link_libraries(tabby_tlm_model PRIVATE SystemC::systemc)
+#target_link_libraries(tabby_tlm_model PRIVATE SystemC::systemc)
