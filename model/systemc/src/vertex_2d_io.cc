@@ -2,7 +2,7 @@
 
 #include "vertex_2d.h"
 
-void write_vertex_2d(BufferInterface& buffer, size_t address,
+void write_vertex_2d(BufferInterface& buffer, uint64_t address,
                      const Vertex2D& vertex_2d) {
     // x
     buffer.write(address + 0, static_cast<uint8_t>(vertex_2d.x >> 0));
@@ -22,7 +22,7 @@ void write_vertex_2d(BufferInterface& buffer, size_t address,
     buffer.write(address + 10, vertex_2d.color.blue);
 }
 
-Vertex2D read_vertex_2d(BufferInterface& buffer, size_t address) {
+Vertex2D read_vertex_2d(BufferInterface& buffer, uint64_t address) {
     Vertex2D vertex_2d{};
 
     // x
