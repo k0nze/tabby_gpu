@@ -15,8 +15,8 @@ set(YAML_CPP_BUILD_TOOLS OFF CACHE BOOL "Build yaml-cpp tools")
 set(YAML_CPP_INSTALL OFF CACHE BOOL "Install yaml-cpp")
 set(YAML_CPP_FORMAT_SOURCE OFF CACHE BOOL "Add yaml-cpp formatting target")
 
-# yaml-cpp 0.8.0 declares an older policy baseline; CMake 4 requires at least 3.5.
-set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
+# yaml-cpp 0.8.0 declares an older policy baseline; CMake 4 requires at least 3.10.
+set(CMAKE_POLICY_VERSION_MINIMUM 3.20)
 
 FetchContent_Declare(
     yaml-cpp
