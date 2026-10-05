@@ -8,6 +8,24 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 find_package(SystemCLanguage CONFIG REQUIRED)
 
+include(FetchContent)
+
+set(YAML_CPP_BUILD_TESTS OFF CACHE BOOL "Build yaml-cpp tests")
+set(YAML_CPP_BUILD_TOOLS OFF CACHE BOOL "Build yaml-cpp tools")
+set(YAML_CPP_INSTALL OFF CACHE BOOL "Install yaml-cpp")
+set(YAML_CPP_FORMAT_SOURCE OFF CACHE BOOL "Add yaml-cpp formatting target")
+
+# yaml-cpp 0.8.0 declares an older policy baseline; CMake 4 requires at least 3.5.
+set(CMAKE_POLICY_VERSION_MINIMUM 3.5)
+
+FetchContent_Declare(
+    yaml-cpp
+    GIT_REPOSITORY https://github.com/jbeder/yaml-cpp.git
+    GIT_TAG 0.8.0
+    GIT_SHALLOW TRUE
+)
+FetchContent_MakeAvailable(yaml-cpp)
+
 add_executable(tabby_tlm_model
     src/main.cc
     src/input_buffer.cc
@@ -21,4 +39,4 @@ target_include_directories(tabby_tlm_model PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/include/tabby
 )
 
-target_link_libraries(tabby_tlm_model PRIVATE SystemC::systemc)
+target_link_libraries(tabby_tlm_model PRIVATE SystemC::systemc yaml-cpp::yaml-cpp)

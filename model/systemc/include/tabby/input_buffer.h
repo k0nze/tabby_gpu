@@ -4,11 +4,19 @@
 #include <tlm_utils/simple_target_socket.h>
 
 #include <cstddef>
+#include <cstdint>
 #include <systemc>
 #include <tlm>
 #include <vector>
 
 #include "buffer_interface.h"
+
+struct InputBufferConfig {
+    uint64_t clock_freq_hz;
+    uint64_t read_setup_cycles;
+    uint64_t read_cycles_per_word;
+    size_t bytes_per_word;
+};
 
 class InputBuffer : public sc_core::sc_module, public BufferInterface {
    public:

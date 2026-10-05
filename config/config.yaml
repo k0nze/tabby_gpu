@@ -1,0 +1,6 @@
+input_buffer:
+    capacity_bytes: 1024
+    bytes_per_word: 4
+    clock_frequency_hz: 100000000
+    read_setup_cycles: 2
+    read_cycles_per_word: 2
