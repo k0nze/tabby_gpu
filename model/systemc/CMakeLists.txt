@@ -26,6 +26,14 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(yaml-cpp)
 
+FetchContent_Declare(
+    CLI11
+    GIT_REPOSITORY https://github.com/CLIUtils/CLI11.git
+    GIT_TAG v2.4.2
+    GIT_SHALLOW TRUE
+)
+FetchContent_MakeAvailable(CLI11)
+
 add_executable(tabby_tlm_model
     src/main.cc
     src/input_buffer.cc
@@ -39,4 +47,8 @@ target_include_directories(tabby_tlm_model PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/include/tabby
 )
 
-target_link_libraries(tabby_tlm_model PRIVATE SystemC::systemc yaml-cpp::yaml-cpp)
+target_link_libraries(tabby_tlm_model PRIVATE
+    SystemC::systemc
+    yaml-cpp::yaml-cpp
+    CLI11::CLI11
+)
