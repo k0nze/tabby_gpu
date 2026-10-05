@@ -5,6 +5,8 @@
 #include <cstddef>
 #include <limits>
 
+#include "integer_math.h"
+
 InputBuffer::InputBuffer(sc_core::sc_module_name name, size_t size)
     : sc_core::sc_module(name), socket("socket"), data_(size) {
     socket.register_b_transport(this, &InputBuffer::b_transport);
@@ -64,13 +66,17 @@ void InputBuffer::b_transport(tlm::tlm_generic_payload& trans,
             data[i] = read(address + i);
         }
 
-        const sc_core::sc_time time_per_byte(10, sc_core::SC_NS);
-        delay += time_per_byte * length;
+        size_t words = ceil_div(length, bytes_per_word_);
+        delay += transaction_latency_ + (words * per_word_latency_);
 
     } else if (trans.is_write()) {
         for (size_t i = 0; i < length; i++) {
             write(address + i, data[i]);
         }
+
+        size_t words = ceil_div(length, bytes_per_word_);
+        delay += transaction_latency_ + (words * per_word_latency_);
+
     } else {
         trans.set_response_status(tlm::TLM_COMMAND_ERROR_RESPONSE);
         return;

@@ -36,3 +36,4 @@ pre-commit install
 ## TODOs
 
 - [x] Pre-commit hooks
+- [ ] move latencies into yaml file to set them globally in one spot

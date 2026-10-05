@@ -22,4 +22,9 @@ class InputBuffer : public sc_core::sc_module, public BufferInterface {
    private:
     std::vector<uint8_t> data_;
     void b_transport(tlm::tlm_generic_payload& trans, sc_core::sc_time& delay);
+
+    const sc_core::sc_time transaction_latency_{10, sc_core::SC_NS};
+    const sc_core::sc_time per_word_latency_{10, sc_core::SC_NS};
+
+    static constexpr size_t bytes_per_word_ = 4;
 };
