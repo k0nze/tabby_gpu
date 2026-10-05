@@ -4,11 +4,25 @@
 
 #include <cstddef>
 #include <limits>
+#include <stdexcept>
 
-#include "integer_math.h"
-
-InputBuffer::InputBuffer(sc_core::sc_module_name name, size_t size)
-    : sc_core::sc_module(name), socket("socket"), data_(size) {
+InputBuffer::InputBuffer(sc_core::sc_module_name name, const InputBufferConfig& config)
+    : sc_core::sc_module(name), socket("socket"), config_(config) {
+    if (config_.capacity_bytes == 0 || config_.clock_freq_hz == 0 ||
+        config_.bytes_per_word == 0) {
+        throw std::invalid_argument(
+            "InputBuffer capacity, frequency, and word size must be nonzero");
+    }
+    const sc_core::sc_time clock_period(
+        1.0 / static_cast<double>(config_.clock_freq_hz), sc_core::SC_SEC);
+    if (clock_period == sc_core::SC_ZERO_TIME) {
+        throw std::invalid_argument(
+            "InputBuffer clock period is below the simulation time resolution");
+    }
+    read_setup_latency_ = clock_period * static_cast<double>(config_.read_setup_cycles);
+    read_word_latency_ =
+        clock_period * static_cast<double>(config_.read_cycles_per_word);
+    data_.resize(config_.capacity_bytes);
     socket.register_b_transport(this, &InputBuffer::b_transport);
 }
 
@@ -66,16 +80,18 @@ void InputBuffer::b_transport(tlm::tlm_generic_payload& trans,
             data[i] = read(address + i);
         }
 
-        size_t words = ceil_div(length, bytes_per_word_);
-        delay += transaction_latency_ + (words * per_word_latency_);
+        const size_t words =
+            length / config_.bytes_per_word + (length % config_.bytes_per_word != 0);
+        delay += read_setup_latency_ + read_word_latency_ * static_cast<double>(words);
 
     } else if (trans.is_write()) {
         for (size_t i = 0; i < length; i++) {
             write(address + i, data[i]);
         }
 
-        size_t words = ceil_div(length, bytes_per_word_);
-        delay += transaction_latency_ + (words * per_word_latency_);
+        const size_t words =
+            length / config_.bytes_per_word + (length % config_.bytes_per_word != 0);
+        delay += read_setup_latency_ + read_word_latency_ * static_cast<double>(words);
 
     } else {
         trans.set_response_status(tlm::TLM_COMMAND_ERROR_RESPONSE);

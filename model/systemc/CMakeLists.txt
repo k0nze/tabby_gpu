@@ -36,6 +36,7 @@ FetchContent_MakeAvailable(CLI11)
 
 add_executable(tabby_tlm_model
     src/main.cc
+    src/config_loader.cc
     src/input_buffer.cc
     src/vertex_2d_io.cc
     src/command_queue.cc
