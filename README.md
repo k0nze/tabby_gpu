@@ -19,7 +19,7 @@ cd model/systemc
 mkdir build
 cd build
 cmake .. -GNinja
-./tabby_tlm_model
+./tabby_tlm_model -c ../../../config/config.yaml
 ```
 
 ## Contribute
