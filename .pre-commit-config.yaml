@@ -16,5 +16,5 @@ repos:
             name: Format CMake files
             entry: cmake-format --in-place
             language: python
-            additional_dependencies: [cmakelang==0.6.13]
+            additional_dependencies: ["cmakelang[yaml]==0.6.13"]
             types: [cmake]
