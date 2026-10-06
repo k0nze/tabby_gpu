@@ -8,21 +8,29 @@
 
 InputBuffer::InputBuffer(sc_core::sc_module_name name, const InputBufferConfig& config)
     : sc_core::sc_module(name), socket("socket"), config_(config) {
-    if (config_.capacity_bytes == 0 || config_.clock_freq_hz == 0 ||
-        config_.bytes_per_word == 0) {
+    // check that config values are valid (greater than 0)
+    if (config_.capacity_bytes < 1 || config_.clock_freq_hz < 1 ||
+        config_.bytes_per_word < 1) {
         throw std::invalid_argument(
-            "InputBuffer capacity, frequency, and word size must be nonzero");
+            "InputBuffer capacity, frequency, and word size must be greater than zero");
     }
-    const sc_core::sc_time clock_period(
-        1.0 / static_cast<double>(config_.clock_freq_hz), sc_core::SC_SEC);
-    if (clock_period == sc_core::SC_ZERO_TIME) {
+
+    // compute clock period
+    clock_period_ = sc_core::sc_time(1.0 / static_cast<double>(config_.clock_freq_hz),
+                                     sc_core::SC_SEC);
+
+    if (clock_period_ == sc_core::SC_ZERO_TIME) {
         throw std::invalid_argument(
             "InputBuffer clock period is below the simulation time resolution");
     }
-    read_setup_latency_ = clock_period * static_cast<double>(config_.read_setup_cycles);
+
+    // compute latencies
+    read_setup_latency_ =
+        clock_period_ * static_cast<double>(config_.read_setup_cycles);
     read_word_latency_ =
-        clock_period * static_cast<double>(config_.read_cycles_per_word);
+        clock_period_ * static_cast<double>(config_.read_cycles_per_word);
     data_.resize(config_.capacity_bytes);
+
     socket.register_b_transport(this, &InputBuffer::b_transport);
 }
 

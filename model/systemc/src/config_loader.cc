@@ -10,7 +10,7 @@ T read_unsigned(const YAML::Node& node, const char* key) {
     const auto value = node[key];
     if (!value.IsScalar() || value.Scalar().empty() || value.Scalar().front() == '-') {
         throw std::invalid_argument(
-            std::string("Missing or invalid nonnegative setting: ") + key);
+            std::string("Missing or invalid non-negative setting: ") + key);
     }
     return value.as<T>();
 }

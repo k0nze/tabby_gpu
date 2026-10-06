@@ -33,6 +33,8 @@ class InputBuffer : public sc_core::sc_module, public BufferInterface {
     void b_transport(tlm::tlm_generic_payload& trans, sc_core::sc_time& delay);
 
     const InputBufferConfig config_;
+
+    sc_core::sc_time clock_period_;
     sc_core::sc_time read_setup_latency_;
     sc_core::sc_time read_word_latency_;
 };
