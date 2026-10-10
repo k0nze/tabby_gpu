@@ -1,6 +1,7 @@
 #include "command_processor.h"
 #include "commands.h"
 #include "frame_buffer_payload.h"
+#include "timing.h"
 #include "vertex_2d_io.h"
 
 #include <cstddef>
@@ -20,12 +21,20 @@
 #include <vector>
 
 CommandProcessor::CommandProcessor(sc_core::sc_module_name name,
-                                   size_t frame_buffer_size_bytes)
+                                   const CommandProcessorConfig& config,
+                                   const size_t frame_buffer_size_bytes)
     : sc_core::sc_module(name),
       input_buffer_socket("input_buffer_socket"),
       frame_buffer_socket("frame_buffer_socket"),
       command_queue_socket("command_queue_socket"),
-      frame_buffer_size_bytes_(frame_buffer_size_bytes) {}
+      config_(config),
+      frame_buffer_size_bytes_(frame_buffer_size_bytes) {
+    // compute clock period
+    clock_period_ = clock_period_from_hz(config_.clock_freq_hz);
+
+    // compute latency
+    decode_latency_ = clock_period_ * static_cast<double>(config_.decode_cycles);
+}
 
 std::vector<Command> CommandProcessor::read_commands(size_t request_count) {
     // silently terminate request if 0 commands are requested
@@ -139,10 +148,12 @@ void CommandProcessor::write_frame_buffer_bytes(uint64_t address,
 }
 
 void CommandProcessor::process_command(const Command& command) {
+    sc_core::wait(decode_latency_);
+
     std::visit(
         [this](const auto& cmd) {
             // get command type without const and reference
-            // decltype: determine cmd type at runtime
+            // decltype: determine cmd type at compile time
             // decay_t: removes const and reference
             // using T: creates type alias such that T can be used as type
             using T = std::decay_t<decltype(cmd)>;

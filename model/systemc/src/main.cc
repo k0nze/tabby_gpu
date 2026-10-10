@@ -27,7 +27,7 @@ int sc_main(int argc, char* argv[]) {
         FrameBuffer frame_buffer("frame_buffer", config.frame_buffer);
         CommandQueue cmd_queue("cmd_queue", config.command_queue);
         CommandProcessor cmd_proc(
-            "cmd_proc",
+            "cmd_proc", config.command_processor,
             config.frame_buffer.width * config.frame_buffer.height * RGB_COLOR_SIZE);
         TabbyTLMModel tabby_tlm_model("tabby_tlm_model", cmd_proc);
 

@@ -1,4 +1,6 @@
+#include "command_processor.h"
 #include "config_loader.h"
+#include "yaml-cpp/node/node.h"
 
 #include <stdexcept>
 #include <yaml-cpp/yaml.h>
@@ -57,6 +59,19 @@ CommandQueueConfig load_command_queue_config(const YAML::Node& root) {
         read_unsigned<uint64_t>(buffer, "read_cycles_per_command"),
     };
 }
+
+CommandProcessorConfig load_command_processor_config(const YAML::Node& root) {
+    const auto buffer = root["command_processor"];
+    if (!buffer.IsMap()) {
+        throw std::invalid_argument(
+            "Configuration requires a command_processor mapping");
+    }
+
+    return {
+        read_unsigned<uint64_t>(buffer, "clock_freq_hz"),
+        read_unsigned<uint64_t>(buffer, "decode_cycles"),
+    };
+}
 }  // namespace
 
 ModelConfig load_config(const std::string& path) {
@@ -65,5 +80,5 @@ ModelConfig load_config(const std::string& path) {
         throw std::invalid_argument("Configuration root must be a mapping");
     }
     return {load_input_buffer_config(root), load_frame_buffer_config(root),
-            load_command_queue_config(root)};
+            load_command_queue_config(root), load_command_processor_config(root)};
 }

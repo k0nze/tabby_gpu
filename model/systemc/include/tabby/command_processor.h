@@ -13,6 +13,11 @@
 #include <tlm_utils/simple_initiator_socket.h>
 #include <vector>
 
+struct CommandProcessorConfig {
+    uint64_t clock_freq_hz;
+    uint64_t decode_cycles;
+};
+
 class CommandProcessor : public sc_core::sc_module {
    public:
     tlm_utils::simple_initiator_socket<CommandProcessor> input_buffer_socket;
@@ -21,7 +26,8 @@ class CommandProcessor : public sc_core::sc_module {
     tlm_utils::simple_initiator_socket<CommandProcessor, 32, CommandProtocolTypes>
         command_queue_socket;
 
-    CommandProcessor(sc_core::sc_module_name name, size_t frame_buffer_size_bytes);
+    CommandProcessor(sc_core::sc_module_name name, const CommandProcessorConfig& config,
+                     const size_t frame_buffer_size_bytes);
 
     std::vector<Command> read_commands(size_t request_count);
     std::vector<uint8_t> read_input_buffer_bytes(uint64_t address, size_t length);
@@ -31,5 +37,9 @@ class CommandProcessor : public sc_core::sc_module {
     void process_command(const Command& command);
 
    private:
-    size_t frame_buffer_size_bytes_;
+    const CommandProcessorConfig config_;
+    const size_t frame_buffer_size_bytes_;
+
+    sc_core::sc_time clock_period_;
+    sc_core::sc_time decode_latency_;
 };

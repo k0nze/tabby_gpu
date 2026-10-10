@@ -21,3 +21,7 @@ command_queue:
     write_cycles_per_command: 1
     read_setup_cycles: 2
     read_cycles_per_command: 1
+
+command_processor:
+    clock_freq_hz: 100000000
+    decode_cycles: 2
