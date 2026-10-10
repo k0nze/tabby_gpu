@@ -12,3 +12,11 @@ frame_buffer:
     clock_freq_hz: 100000000
     write_setup_cycles: 2
     write_cycles_per_word: 2
+
+command_queue:
+    size: 64
+    clock_freq_hz: 100000000
+    write_setup_cycles: 2
+    write_cycles_per_command: 1
+    read_setup_cycles: 2
+    read_cycles_per_command: 1

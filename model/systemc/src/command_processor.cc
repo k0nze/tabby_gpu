@@ -8,6 +8,7 @@
 #include <sysc/kernel/sc_module.h>
 #include <sysc/kernel/sc_module_name.h>
 #include <sysc/kernel/sc_time.h>
+#include <sysc/kernel/sc_wait_cthread.h>
 #include <sysc/utils/sc_report.h>
 #include <tlm_core/tlm_2/tlm_generic_payload/tlm_gp.h>
 #include <type_traits>
@@ -17,7 +18,34 @@
 CommandProcessor::CommandProcessor(sc_core::sc_module_name name)
     : sc_core::sc_module(name),
       input_buffer_socket("input_buffer_socket"),
-      frame_buffer_socket("frame_buffer_socket") {}
+      frame_buffer_socket("frame_buffer_socket"),
+      command_queue_socket("command_queue_socket") {}
+
+std::vector<Command> CommandProcessor::read_commands(size_t request_count) {
+    // silently terminate request if 0 commands are requested
+    if (request_count == 0) {
+        return {};
+    }
+
+    CommandPayload trans;
+    trans.operation = CommandPayload::Operation::Pop;
+    trans.request_count = request_count;
+
+    sc_core::sc_time delay = sc_core::SC_ZERO_TIME;
+
+    command_queue_socket->b_transport(trans, delay);
+
+    if (trans.response == CommandPayload::Response::Empty) {
+        return {};
+    }
+
+    if (trans.response != CommandPayload::Response::Ok) {
+        throw std::runtime_error("CommandQueue fetch failed");
+    }
+
+    sc_core::wait(delay);
+    return std::move(trans.commands);
+}
 
 std::vector<uint8_t> CommandProcessor::read_input_buffer_bytes(uint64_t address,
                                                                size_t length) {

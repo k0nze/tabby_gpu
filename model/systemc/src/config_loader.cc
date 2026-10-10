@@ -41,6 +41,21 @@ FrameBufferConfig load_frame_buffer_config(const YAML::Node& root) {
         read_unsigned<size_t>(buffer, "bytes_per_word"),
     };
 }
+
+CommandQueueConfig load_command_queue_config(const YAML::Node& root) {
+    const auto buffer = root["command_queue"];
+    if (!buffer.IsMap()) {
+        throw std::invalid_argument("Configuration requires a command_queue mapping");
+    }
+    return {
+        read_unsigned<size_t>(buffer, "size"),
+        read_unsigned<uint64_t>(buffer, "clock_freq_hz"),
+        read_unsigned<uint64_t>(buffer, "write_setup_cycles"),
+        read_unsigned<uint64_t>(buffer, "write_cycles_per_command"),
+        read_unsigned<uint64_t>(buffer, "read_setup_cycles"),
+        read_unsigned<uint64_t>(buffer, "read_cycles_per_command"),
+    };
+}
 }  // namespace
 
 ModelConfig load_config(const std::string& path) {
@@ -48,5 +63,6 @@ ModelConfig load_config(const std::string& path) {
     if (!root.IsMap()) {
         throw std::invalid_argument("Configuration root must be a mapping");
     }
-    return {load_input_buffer_config(root), load_frame_buffer_config(root)};
+    return {load_input_buffer_config(root), load_frame_buffer_config(root),
+            load_command_queue_config(root)};
 }

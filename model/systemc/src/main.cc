@@ -1,5 +1,7 @@
 #include "CLI/CLI.hpp"
 #include "command_processor.h"
+#include "command_queue.h"
+#include "commands.h"
 #include "config_loader.h"
 #include "frame_buffer.h"
 #include "input_buffer.h"
@@ -22,15 +24,19 @@ int sc_main(int argc, char* argv[]) {
         const auto config = load_config(config_path);
         InputBuffer input_buffer("input_buffer", config.input_buffer);
         FrameBuffer frame_buffer("frame_buffer", config.frame_buffer);
+        CommandQueue cmd_queue("cmd_queue", config.command_queue);
         CommandProcessor cmd_proc("cmd_proc");
         TabbyTLMModel tabby_tlm_model("tabby_tlm_model", cmd_proc);
 
         cmd_proc.input_buffer_socket.bind(input_buffer.socket);
         cmd_proc.frame_buffer_socket.bind(frame_buffer.socket);
+        cmd_proc.command_queue_socket.bind(cmd_queue.socket);
 
         input_buffer.write(0x100, 42);
         input_buffer.write(0x101, 23);
         input_buffer.write(0x102, 67);
+
+        cmd_queue.push(CommandClearFrameBuffer{});
 
         sc_core::sc_start();
     } catch (const std::exception& error) {
