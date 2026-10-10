@@ -27,7 +27,7 @@ class CommandProcessor : public sc_core::sc_module {
         command_queue_socket;
 
     CommandProcessor(sc_core::sc_module_name name, const CommandProcessorConfig& config,
-                     const size_t frame_buffer_size_bytes);
+                     size_t frame_buffer_width, size_t frame_buffer_height);
 
     std::vector<Command> read_commands(size_t request_count);
     std::vector<uint8_t> read_input_buffer_bytes(uint64_t address, size_t length);
@@ -38,7 +38,8 @@ class CommandProcessor : public sc_core::sc_module {
 
    private:
     const CommandProcessorConfig config_;
-    const size_t frame_buffer_size_bytes_;
+    const size_t frame_buffer_width_;
+    const size_t frame_buffer_height_;
 
     sc_core::sc_time clock_period_;
     sc_core::sc_time decode_latency_;

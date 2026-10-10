@@ -62,7 +62,9 @@ add_executable(
     src/command_queue.cc
     src/command_processor.cc
     src/tabby_tlm_model.cc
-    src/frame_buffer.cc)
+    src/frame_buffer.cc
+    src/triangle_rasterizer.cc
+    src/rasterized_scanline.cc)
 
 target_include_directories(tabby_tlm_model
                            PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include/tabby)

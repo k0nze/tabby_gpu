@@ -1,7 +1,11 @@
 #include "command_processor.h"
 #include "commands.h"
 #include "frame_buffer_payload.h"
+#include "rasterized_scanline.h"
+#include "rgb_color.h"
 #include "timing.h"
+#include "triangle_rasterizer.h"
+#include "vertex_2d.h"
 #include "vertex_2d_io.h"
 
 #include <cstddef>
@@ -22,13 +26,18 @@
 
 CommandProcessor::CommandProcessor(sc_core::sc_module_name name,
                                    const CommandProcessorConfig& config,
-                                   const size_t frame_buffer_size_bytes)
+                                   size_t frame_buffer_width,
+                                   size_t frame_buffer_height)
     : sc_core::sc_module(name),
       input_buffer_socket("input_buffer_socket"),
       frame_buffer_socket("frame_buffer_socket"),
       command_queue_socket("command_queue_socket"),
       config_(config),
-      frame_buffer_size_bytes_(frame_buffer_size_bytes) {
+      frame_buffer_width_(frame_buffer_width),
+      frame_buffer_height_(frame_buffer_height) {
+    if (frame_buffer_width_ == 0 || frame_buffer_height_ == 0) {
+        throw std::invalid_argument("Framebuffer dimensions must be nonzero");
+    }
     // compute clock period
     clock_period_ = clock_period_from_hz(config_.clock_freq_hz);
 
@@ -159,11 +168,46 @@ void CommandProcessor::process_command(const Command& command) {
             using T = std::decay_t<decltype(cmd)>;
 
             if constexpr (std::is_same_v<T, CommandClearFrameBuffer>) {
-                std::cout << "Clear framebuffer" << std::endl;
                 clear_frame_buffer();
             } else if constexpr (std::is_same_v<T, CommandDrawTriangle>) {
-                std::cout << "Triange address: " << cmd.vertices_2d_start_address
-                          << std::endl;
+                const auto bytes = read_input_buffer_bytes(
+                    cmd.vertices_2d_start_address, 3 * VERTEX_2D_SIZE);
+                const std::span<const uint8_t> data{bytes};
+
+                const auto v0 = decode_vertex_2d(data.subspan(0, VERTEX_2D_SIZE));
+                const auto v1 =
+                    decode_vertex_2d(data.subspan(VERTEX_2D_SIZE, VERTEX_2D_SIZE));
+                const auto v2 =
+                    decode_vertex_2d(data.subspan(2 * VERTEX_2D_SIZE, VERTEX_2D_SIZE));
+
+                auto rasterized_scanlines = rasterize_triangle(
+                    v0, v1, v2, frame_buffer_width_, frame_buffer_height_);
+
+                for (auto& rasterized_scanline : rasterized_scanlines) {
+                    // compute frame buffer address
+                    const auto y = rasterized_scanline.y;
+                    const auto x_start = rasterized_scanline.x_start;
+
+                    // check if scanline is out of bound of frame buffer
+                    if (y >= frame_buffer_height_ || x_start >= frame_buffer_width_ ||
+                        rasterized_scanline.pixels.empty()) {
+                        continue;
+                    }
+
+                    // clip the run to the remaining pixels in this row.
+                    const auto available_pixels = frame_buffer_width_ - x_start;
+                    if (rasterized_scanline.pixels.size() > available_pixels) {
+                        rasterized_scanline.pixels.resize(available_pixels);
+                    }
+
+                    const uint64_t address = y * frame_buffer_width_ * RGB_COLOR_SIZE +
+                                             x_start * RGB_COLOR_SIZE;
+
+                    // encode rasterized scanline
+                    const auto scanline_bytes =
+                        encode_rasterized_scanline(rasterized_scanline);
+                    write_frame_buffer_bytes(address, scanline_bytes);
+                }
             }
         },
         command);
