@@ -1,6 +1,7 @@
 #pragma once
 
 #include "buffer_interface.h"
+#include "frame_buffer_payload.h"
 
 #include <cstddef>
 #include <cstdint>
@@ -17,11 +18,12 @@ struct FrameBufferConfig {
     uint64_t write_setup_cycles;
     uint64_t write_cycles_per_word;
     size_t bytes_per_word;
+    uint64_t clear_cycles;
 };
 
 class FrameBuffer : public sc_core::sc_module, public BufferInterface {
    public:
-    tlm_utils::simple_target_socket<FrameBuffer> socket;
+    tlm_utils::simple_target_socket<FrameBuffer, 32, FrameBufferProtocolTypes> socket;
 
     FrameBuffer(sc_core::sc_module_name name, const FrameBufferConfig& config);
 
@@ -36,7 +38,7 @@ class FrameBuffer : public sc_core::sc_module, public BufferInterface {
 
    private:
     std::vector<uint8_t> data_;
-    void b_transport(tlm::tlm_generic_payload& trans, sc_core::sc_time& delay);
+    void b_transport(FrameBufferPayload& trans, sc_core::sc_time& delay);
 
     const FrameBufferConfig config_;
 

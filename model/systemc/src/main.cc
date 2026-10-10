@@ -5,6 +5,7 @@
 #include "config_loader.h"
 #include "frame_buffer.h"
 #include "input_buffer.h"
+#include "rgb_color.h"
 #include "tabby_tlm_model.h"
 
 #include <iostream>
@@ -25,7 +26,9 @@ int sc_main(int argc, char* argv[]) {
         InputBuffer input_buffer("input_buffer", config.input_buffer);
         FrameBuffer frame_buffer("frame_buffer", config.frame_buffer);
         CommandQueue cmd_queue("cmd_queue", config.command_queue);
-        CommandProcessor cmd_proc("cmd_proc");
+        CommandProcessor cmd_proc(
+            "cmd_proc",
+            config.frame_buffer.width * config.frame_buffer.height * RGB_COLOR_SIZE);
         TabbyTLMModel tabby_tlm_model("tabby_tlm_model", cmd_proc);
 
         cmd_proc.input_buffer_socket.bind(input_buffer.socket);

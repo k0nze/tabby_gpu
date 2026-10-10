@@ -39,6 +39,7 @@ FrameBufferConfig load_frame_buffer_config(const YAML::Node& root) {
         read_unsigned<uint64_t>(buffer, "write_setup_cycles"),
         read_unsigned<uint64_t>(buffer, "write_cycles_per_word"),
         read_unsigned<size_t>(buffer, "bytes_per_word"),
+        read_unsigned<uint64_t>(buffer, "clear_cycles"),
     };
 }
 

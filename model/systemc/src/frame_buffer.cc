@@ -1,4 +1,5 @@
 #include "frame_buffer.h"
+#include "frame_buffer_payload.h"
 #include "rgb_color.h"
 #include "timing.h"
 
@@ -60,8 +61,20 @@ std::vector<uint8_t> FrameBuffer::read_whole_buffer() const {
     return data_;
 }
 
-void FrameBuffer::b_transport(tlm::tlm_generic_payload& trans,
-                              sc_core::sc_time& delay) {
+void FrameBuffer::b_transport(FrameBufferPayload& trans, sc_core::sc_time& delay) {
+    if (trans.operation == FrameBufferPayload::Operation::Clear) {
+        clear();
+
+        delay += clock_period_ * static_cast<double>(config_.clear_cycles);
+        trans.set_response_status(tlm::TLM_OK_RESPONSE);
+        return;
+    }
+
+    if (trans.operation != FrameBufferPayload::Operation::Write) {
+        trans.set_response_status(tlm::TLM_COMMAND_ERROR_RESPONSE);
+        return;
+    }
+
     uint64_t address = trans.get_address();
     size_t length = trans.get_data_length();
     uint8_t* data = trans.get_data_ptr();
@@ -91,19 +104,13 @@ void FrameBuffer::b_transport(tlm::tlm_generic_payload& trans,
         return;
     }
 
-    if (trans.is_write()) {
-        for (size_t i = 0; i < length; i++) {
-            write(address + i, data[i]);
-        }
-
-        const size_t words =
-            length / config_.bytes_per_word + (length % config_.bytes_per_word != 0);
-        delay +=
-            write_setup_latency_ + write_word_latency_ * static_cast<double>(words);
-    } else {
-        trans.set_response_status(tlm::TLM_COMMAND_ERROR_RESPONSE);
-        return;
+    for (size_t i = 0; i < length; i++) {
+        write(address + i, data[i]);
     }
+
+    const size_t words =
+        length / config_.bytes_per_word + (length % config_.bytes_per_word != 0);
+    delay += write_setup_latency_ + write_word_latency_ * static_cast<double>(words);
 
     trans.set_response_status(tlm::TLM_OK_RESPONSE);
 }
