@@ -1,51 +1,66 @@
-#include "input_buffer.h"
+#include "frame_buffer.h"
+#include "rgb_color.h"
 #include "timing.h"
 
+#include <algorithm>
 #include <cstddef>
-#include <limits>
+#include <cstdint>
+#include <iterator>
 #include <stdexcept>
 #include <tlm_core/tlm_2/tlm_generic_payload/tlm_gp.h>
+#include <vector>
 
-InputBuffer::InputBuffer(sc_core::sc_module_name name, const InputBufferConfig& config)
+FrameBuffer::FrameBuffer(sc_core::sc_module_name name, const FrameBufferConfig& config)
     : sc_core::sc_module(name), socket("socket"), config_(config) {
     // check that config values are valid (greater than 0)
-    if (config_.capacity_bytes < 1 || config_.bytes_per_word < 1) {
+    if (config_.width < 1 || config_.height < 1 || config_.bytes_per_word < 1) {
         throw std::invalid_argument(
-            "InputBuffer capacity and word size must be greater than zero");
+            "FrameBuffer width, height, and word size must be greater than zero");
     }
 
     // compute clock period
     clock_period_ = clock_period_from_hz(config_.clock_freq_hz);
 
     // compute latencies
-    read_setup_latency_ =
-        clock_period_ * static_cast<double>(config_.read_setup_cycles);
-    read_word_latency_ =
-        clock_period_ * static_cast<double>(config_.read_cycles_per_word);
-    data_.resize(config_.capacity_bytes);
+    write_setup_latency_ =
+        clock_period_ * static_cast<double>(config_.write_setup_cycles);
+    write_word_latency_ =
+        clock_period_ * static_cast<double>(config_.write_cycles_per_word);
+    data_.resize(config_.width * config_.height * RGB_COLOR_SIZE);
 
-    socket.register_b_transport(this, &InputBuffer::b_transport);
+    socket.register_b_transport(this, &FrameBuffer::b_transport);
 }
 
-void InputBuffer::write(uint64_t address, uint8_t value) {
+void FrameBuffer::clear() { std::fill(data_.begin(), data_.end(), uint8_t{0}); }
+
+void FrameBuffer::write(uint64_t address, uint8_t value) {
     // check if address is in range
     if (address >= data_.size()) {
-        throw std::out_of_range("InputBuffer write");
+        throw std::out_of_range("FrameBuffer write");
     }
 
     data_[address] = value;
 }
 
-uint8_t InputBuffer::read(uint64_t address) {
+uint8_t FrameBuffer::read(uint64_t address) {
     // check if address is in range
     if (address >= data_.size()) {
-        throw std::out_of_range("InputBuffer read");
+        throw std::out_of_range("FrameBuffer read");
     }
 
     return data_[address];
 }
 
-void InputBuffer::b_transport(tlm::tlm_generic_payload& trans,
+size_t FrameBuffer::get_width() const { return config_.width; }
+
+size_t FrameBuffer::get_height() const { return config_.height; }
+
+std::vector<uint8_t> FrameBuffer::read_whole_buffer() const {
+    // returns copy
+    return data_;
+}
+
+void FrameBuffer::b_transport(tlm::tlm_generic_payload& trans,
                               sc_core::sc_time& delay) {
     uint64_t address = trans.get_address();
     size_t length = trans.get_data_length();
@@ -76,24 +91,15 @@ void InputBuffer::b_transport(tlm::tlm_generic_payload& trans,
         return;
     }
 
-    if (trans.is_read()) {
-        for (size_t i = 0; i < length; i++) {
-            data[i] = read(address + i);
-        }
-
-        const size_t words =
-            length / config_.bytes_per_word + (length % config_.bytes_per_word != 0);
-        delay += read_setup_latency_ + read_word_latency_ * static_cast<double>(words);
-
-    } else if (trans.is_write()) {
+    if (trans.is_write()) {
         for (size_t i = 0; i < length; i++) {
             write(address + i, data[i]);
         }
 
         const size_t words =
             length / config_.bytes_per_word + (length % config_.bytes_per_word != 0);
-        delay += read_setup_latency_ + read_word_latency_ * static_cast<double>(words);
-
+        delay +=
+            write_setup_latency_ + write_word_latency_ * static_cast<double>(words);
     } else {
         trans.set_response_status(tlm::TLM_COMMAND_ERROR_RESPONSE);
         return;

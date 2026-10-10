@@ -46,10 +46,12 @@ add_executable(
     src/main.cc
     src/config_loader.cc
     src/input_buffer.cc
+    src/timing.cc
     src/vertex_2d_io.cc
     src/command_queue.cc
     src/command_processor.cc
-    src/tabby_tlm_model.cc)
+    src/tabby_tlm_model.cc
+    src/frame_buffer.cc)
 
 target_include_directories(tabby_tlm_model
                            PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include/tabby)
