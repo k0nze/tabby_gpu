@@ -1,8 +1,8 @@
+#include "vertex_2d.h"
 #include "vertex_2d_io.h"
 
-#include "vertex_2d.h"
-
 #include <array>
+#include <bit>
 #include <cstddef>
 #include <cstdint>
 #include <limits>
@@ -12,9 +12,11 @@ std::array<uint8_t, VERTEX_2D_SIZE> encode_vertex_2d(const Vertex2D& vertex_2d) 
     std::array<uint8_t, VERTEX_2D_SIZE> data{};
 
     // copy position x,y
+    const auto x = std::bit_cast<uint32_t>(vertex_2d.x);
+    const auto y = std::bit_cast<uint32_t>(vertex_2d.y);
     for (size_t i = 0; i < 4; i++) {
-        data[i] = static_cast<uint8_t>(vertex_2d.x >> (8 * i));
-        data[4 + i] = static_cast<uint8_t>(vertex_2d.y >> (8 * i));
+        data[i] = static_cast<uint8_t>(x >> (8 * i));
+        data[4 + i] = static_cast<uint8_t>(y >> (8 * i));
     }
 
     // copy RGB color data
@@ -34,12 +36,14 @@ Vertex2D decode_vertex_2d(std::span<const uint8_t> data) {
     Vertex2D v{};
 
     // copy position x,y
-    v.x = static_cast<uint32_t>(data[0]) | (static_cast<uint32_t>(data[1]) << 8) |
-          (static_cast<uint32_t>(data[2]) << 16) |
-          (static_cast<uint32_t>(data[3]) << 24);
-    v.y = static_cast<uint32_t>(data[4]) | (static_cast<uint32_t>(data[5]) << 8) |
-          (static_cast<uint32_t>(data[6]) << 16) |
-          (static_cast<uint32_t>(data[7]) << 24);
+    const uint32_t x =
+        static_cast<uint32_t>(data[0]) | (static_cast<uint32_t>(data[1]) << 8) |
+        (static_cast<uint32_t>(data[2]) << 16) | (static_cast<uint32_t>(data[3]) << 24);
+    const uint32_t y =
+        static_cast<uint32_t>(data[4]) | (static_cast<uint32_t>(data[5]) << 8) |
+        (static_cast<uint32_t>(data[6]) << 16) | (static_cast<uint32_t>(data[7]) << 24);
+    v.x = std::bit_cast<int32_t>(x);
+    v.y = std::bit_cast<int32_t>(y);
 
     // copy RGB color data
     v.color.red = data[8];

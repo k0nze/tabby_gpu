@@ -5,6 +5,6 @@ SortIncludes: CaseSensitive
 IncludeBlocks: Regroup
 IncludeCategories:
     - Regex: '^"'
-      Priority: 1
+      Priority: 0
     - Regex: "^<"
       Priority: 2
