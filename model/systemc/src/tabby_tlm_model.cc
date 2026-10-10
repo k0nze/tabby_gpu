@@ -1,6 +1,5 @@
-#include "tabby_tlm_model.h"
-
 #include "command_processor.h"
+#include "tabby_tlm_model.h"
 
 #include <sysc/kernel/sc_simcontext.h>
 #include <systemc>
@@ -14,6 +13,7 @@ void TabbyTLMModel::run() {
     auto start_time = sc_core::sc_time_stamp();
 
     auto data = cmd_proc_.read_bytes(0x100, 3);
+    cmd_proc_.write_bytes(0, data);
 
     for (auto byte : data) {
         std::cout << static_cast<int>(byte) << std::endl;
