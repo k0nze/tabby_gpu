@@ -42,6 +42,9 @@ int sc_main(int argc, char* argv[]) {
         cmd_queue.push(CommandClearFrameBuffer{});
 
         sc_core::sc_start();
+
+        frame_buffer.export_png("frame.png");
+
     } catch (const std::exception& error) {
         std::cerr << "Model initialization or simulation failed: " << error.what()
                   << '\n';

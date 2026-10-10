@@ -41,6 +41,17 @@ FetchContent_Declare(
     GIT_SHALLOW TRUE)
 FetchContent_MakeAvailable(CLI11)
 
+FetchContent_Declare(
+    lodepng
+    GIT_REPOSITORY https://github.com/lvandeve/lodepng.git
+    GIT_TAG e584a8490db1b76b81bf298c11c09d3b55d9c270)
+FetchContent_MakeAvailable(lodepng)
+
+# LodePNG provides source files rather than a CMake library target.
+add_library(lodepng STATIC ${lodepng_SOURCE_DIR}/lodepng.cpp)
+add_library(LodePNG::LodePNG ALIAS lodepng)
+target_include_directories(lodepng SYSTEM PUBLIC ${lodepng_SOURCE_DIR})
+
 add_executable(
     tabby_tlm_model
     src/main.cc
@@ -59,5 +70,6 @@ target_include_directories(tabby_tlm_model
 # Keep SystemC headers compatible with the library built using C++17.
 target_compile_definitions(tabby_tlm_model PRIVATE SC_CPLUSPLUS=201703L)
 
-target_link_libraries(tabby_tlm_model PRIVATE SystemC::systemc
-                                              yaml-cpp::yaml-cpp CLI11::CLI11)
+target_link_libraries(
+    tabby_tlm_model PRIVATE SystemC::systemc yaml-cpp::yaml-cpp CLI11::CLI11
+                            LodePNG::LodePNG)

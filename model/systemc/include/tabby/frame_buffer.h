@@ -5,6 +5,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <string>
 #include <systemc>
 #include <tlm>
 #include <tlm_core/tlm_2/tlm_generic_payload/tlm_gp.h>
@@ -35,6 +36,7 @@ class FrameBuffer : public sc_core::sc_module, public BufferInterface {
     size_t get_height() const;
 
     std::vector<uint8_t> read_whole_buffer() const;
+    void export_png(const std::string& path) const;
 
    private:
     std::vector<uint8_t> data_;

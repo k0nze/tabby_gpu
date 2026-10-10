@@ -1,5 +1,6 @@
 #include "frame_buffer.h"
 #include "frame_buffer_payload.h"
+#include "lodepng.h"
 #include "rgb_color.h"
 #include "timing.h"
 
@@ -7,6 +8,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <iterator>
+#include <limits>
 #include <stdexcept>
 #include <tlm_core/tlm_2/tlm_generic_payload/tlm_gp.h>
 #include <vector>
@@ -59,6 +61,17 @@ size_t FrameBuffer::get_height() const { return config_.height; }
 std::vector<uint8_t> FrameBuffer::read_whole_buffer() const {
     // returns copy
     return data_;
+}
+
+void FrameBuffer::export_png(const std::string& path) const {
+    const unsigned error =
+        lodepng::encode(path, data_, static_cast<unsigned>(config_.width),
+                        static_cast<unsigned>(config_.height), LCT_RGB, 8);
+
+    if (error != 0) {
+        throw std::runtime_error("PNG export failed: " +
+                                 std::string(lodepng_error_text(error)));
+    }
 }
 
 void FrameBuffer::b_transport(FrameBufferPayload& trans, sc_core::sc_time& delay) {
