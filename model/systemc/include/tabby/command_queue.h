@@ -1,8 +1,8 @@
 #pragma once
 
-#include <queue>
-
 #include "commands.h"
+
+#include <queue>
 
 class CommandQueue {
    public:

@@ -1,12 +1,12 @@
 #include "vertex_2d_io.h"
 
+#include "vertex_2d.h"
+
 #include <array>
 #include <cstddef>
 #include <cstdint>
 #include <limits>
 #include <stdexcept>
-
-#include "vertex_2d.h"
 
 std::array<uint8_t, VERTEX_2D_SIZE> encode_vertex_2d(const Vertex2D& vertex_2d) {
     std::array<uint8_t, VERTEX_2D_SIZE> data{};

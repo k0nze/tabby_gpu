@@ -1,9 +1,8 @@
 #pragma once
 
-#include <tlm_utils/simple_initiator_socket.h>
-
 #include <systemc>
 #include <tlm>
+#include <tlm_utils/simple_initiator_socket.h>
 
 class CommandProcessor : public sc_core::sc_module {
    public:

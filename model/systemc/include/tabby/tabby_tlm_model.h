@@ -1,11 +1,10 @@
 #pragma once
 
+#include "command_processor.h"
+
 #include <sysc/kernel/sc_module.h>
 #include <sysc/kernel/sc_module_name.h>
-
 #include <systemc>
-
-#include "command_processor.h"
 
 class TabbyTLMModel : public sc_core::sc_module {
    public:

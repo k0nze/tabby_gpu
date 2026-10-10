@@ -1,15 +1,14 @@
 #pragma once
 
-#include <tlm_core/tlm_2/tlm_generic_payload/tlm_gp.h>
-#include <tlm_utils/simple_target_socket.h>
+#include "buffer_interface.h"
 
 #include <cstddef>
 #include <cstdint>
 #include <systemc>
 #include <tlm>
+#include <tlm_core/tlm_2/tlm_generic_payload/tlm_gp.h>
+#include <tlm_utils/simple_target_socket.h>
 #include <vector>
-
-#include "buffer_interface.h"
 
 struct InputBufferConfig {
     size_t capacity_bytes;

@@ -1,20 +1,19 @@
 #include "command_processor.h"
 
-#include <sysc/kernel/sc_module.h>
-#include <sysc/kernel/sc_module_name.h>
-#include <sysc/kernel/sc_time.h>
-#include <sysc/utils/sc_report.h>
-#include <tlm_core/tlm_2/tlm_generic_payload/tlm_gp.h>
+#include "vertex_2d_io.h"
 
 #include <cstdint>
 #include <iostream>
 #include <limits>
 #include <stdexcept>
+#include <sysc/kernel/sc_module.h>
+#include <sysc/kernel/sc_module_name.h>
+#include <sysc/kernel/sc_time.h>
+#include <sysc/utils/sc_report.h>
+#include <tlm_core/tlm_2/tlm_generic_payload/tlm_gp.h>
 #include <type_traits>
 #include <variant>
 #include <vector>
-
-#include "vertex_2d_io.h"
 
 CommandProcessor::CommandProcessor(sc_core::sc_module_name name)
     : sc_core::sc_module(name), socket("socket") {}

@@ -1,10 +1,9 @@
 #include "tabby_tlm_model.h"
 
-#include <sysc/kernel/sc_simcontext.h>
-
-#include <systemc>
-
 #include "command_processor.h"
+
+#include <sysc/kernel/sc_simcontext.h>
+#include <systemc>
 
 TabbyTLMModel::TabbyTLMModel(sc_core::sc_module_name name, CommandProcessor& cmd_proc)
     : sc_core::sc_module(name), cmd_proc_(cmd_proc) {

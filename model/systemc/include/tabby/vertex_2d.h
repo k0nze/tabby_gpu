@@ -1,9 +1,9 @@
 #pragma once
 
+#include "rgb_color.h"
+
 #include <cstddef>
 #include <cstdint>
-
-#include "rgb_color.h"
 
 inline constexpr std::size_t VERTEX_2D_SIZE = 2 * 4 + RGB_COLOR_SIZE;
 

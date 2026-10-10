@@ -1,12 +1,12 @@
-#include <iostream>
-#include <string>
-#include <systemc>
-
 #include "CLI/CLI.hpp"
 #include "command_processor.h"
 #include "config_loader.h"
 #include "input_buffer.h"
 #include "tabby_tlm_model.h"
+
+#include <iostream>
+#include <string>
+#include <systemc>
 
 int sc_main(int argc, char* argv[]) {
     CLI::App app{"Tabby TLM Model"};

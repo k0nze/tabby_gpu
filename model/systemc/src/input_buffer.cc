@@ -1,10 +1,9 @@
 #include "input_buffer.h"
 
-#include <tlm_core/tlm_2/tlm_generic_payload/tlm_gp.h>
-
 #include <cstddef>
 #include <limits>
 #include <stdexcept>
+#include <tlm_core/tlm_2/tlm_generic_payload/tlm_gp.h>
 
 InputBuffer::InputBuffer(sc_core::sc_module_name name, const InputBufferConfig& config)
     : sc_core::sc_module(name), socket("socket"), config_(config) {

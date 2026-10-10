@@ -1,8 +1,8 @@
 #include "command_queue.h"
 
-#include <stdexcept>
-
 #include "commands.h"
+
+#include <stdexcept>
 
 void CommandQueue::push(const Command& command) { queue_.push(command); }
 

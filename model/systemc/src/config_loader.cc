@@ -1,8 +1,7 @@
 #include "config_loader.h"
 
-#include <yaml-cpp/yaml.h>
-
 #include <stdexcept>
+#include <yaml-cpp/yaml.h>
 
 namespace {
 template <typename T>
