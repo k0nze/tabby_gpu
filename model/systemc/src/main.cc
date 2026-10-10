@@ -18,8 +18,8 @@ int sc_main(int argc, char* argv[]) {
     CLI11_PARSE(app, argc, argv);
 
     try {
-        const auto config = load_input_buffer_config(config_path);
-        InputBuffer input_buffer("input_buffer", config);
+        const auto config = load_config(config_path);
+        InputBuffer input_buffer("input_buffer", config.input_buffer);
         CommandProcessor cmd_proc("cmd_proc");
         TabbyTLMModel tabby_tlm_model("tabby_tlm_model", cmd_proc);
 
