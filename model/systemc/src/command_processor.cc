@@ -19,7 +19,8 @@ CommandProcessor::CommandProcessor(sc_core::sc_module_name name)
       input_buffer_socket("input_buffer_socket"),
       frame_buffer_socket("frame_buffer_socket") {}
 
-std::vector<uint8_t> CommandProcessor::read_bytes(uint64_t address, size_t length) {
+std::vector<uint8_t> CommandProcessor::read_input_buffer_bytes(uint64_t address,
+                                                               size_t length) {
     // since tlm length is an unsigned int (32bit) and the length parameter is size_t
     // (64bit) a length check is needed
     if (length > std::numeric_limits<unsigned int>::max()) {
@@ -51,7 +52,8 @@ std::vector<uint8_t> CommandProcessor::read_bytes(uint64_t address, size_t lengt
     return data;
 }
 
-void CommandProcessor::write_bytes(uint64_t address, std::span<const uint8_t> data) {
+void CommandProcessor::write_frame_buffer_bytes(uint64_t address,
+                                                std::span<const uint8_t> data) {
     // silently terminate an empty write
     if (data.empty()) {
         return;
