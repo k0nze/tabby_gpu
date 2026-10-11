@@ -8,6 +8,7 @@
 #include "rgb_color.h"
 #include "tabby_tlm_model.h"
 #include "triangle_2d_io.h"
+#include "triangle_rasterizer.h"
 
 #include <iostream>
 #include <string>
@@ -26,9 +27,13 @@ int sc_main(int argc, char* argv[]) {
         const auto config = load_config(config_path);
         InputBuffer input_buffer("input_buffer", config.input_buffer);
         FrameBuffer frame_buffer("frame_buffer", config.frame_buffer);
+        TriangleRasterizer triangle_rasterizer(
+            "triangle_rasterizer", config.triangle_rasterizer, frame_buffer.get_width(),
+            frame_buffer.get_height());
         CommandQueue cmd_queue("cmd_queue", config.command_queue);
         CommandProcessor cmd_proc("cmd_proc", config.command_processor,
-                                  frame_buffer.get_width(), frame_buffer.get_height());
+                                  triangle_rasterizer, frame_buffer.get_width(),
+                                  frame_buffer.get_height());
         TabbyTLMModel tabby_tlm_model("tabby_tlm_model", cmd_proc);
 
         cmd_proc.input_buffer_socket.bind(input_buffer.socket);

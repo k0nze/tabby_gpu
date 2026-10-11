@@ -26,6 +26,7 @@
 
 CommandProcessor::CommandProcessor(sc_core::sc_module_name name,
                                    const CommandProcessorConfig& config,
+                                   TriangleRasterizer& triangle_rasterizer,
                                    size_t frame_buffer_width,
                                    size_t frame_buffer_height)
     : sc_core::sc_module(name),
@@ -33,6 +34,7 @@ CommandProcessor::CommandProcessor(sc_core::sc_module_name name,
       frame_buffer_socket("frame_buffer_socket"),
       command_queue_socket("command_queue_socket"),
       config_(config),
+      triangle_rasterizer_(triangle_rasterizer),
       frame_buffer_width_(frame_buffer_width),
       frame_buffer_height_(frame_buffer_height) {
     if (frame_buffer_width_ == 0 || frame_buffer_height_ == 0) {
@@ -174,11 +176,12 @@ void CommandProcessor::process_command(const Command& command) {
                     cmd.vertices_2d_start_address, 3 * VERTEX_2D_SIZE);
                 const auto triangle = decode_triangle_2d(bytes);
 
-                auto rasterized_scanlines =
-                    rasterize_triangle(triangle.v0, triangle.v1, triangle.v2,
-                                       frame_buffer_width_, frame_buffer_height_);
+                // submit triangle to triangle_rasterizer
+                triangle_rasterizer_.submit(triangle);
 
-                for (auto& rasterized_scanline : rasterized_scanlines) {
+                while (auto scanline = triangle_rasterizer_.next_scanline()) {
+                    auto& rasterized_scanline = *scanline;
+
                     // compute frame buffer address
                     const auto y = rasterized_scanline.y;
                     const auto x_start = rasterized_scanline.x_start;

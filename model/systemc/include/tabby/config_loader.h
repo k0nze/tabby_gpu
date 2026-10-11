@@ -13,7 +13,7 @@ struct ModelConfig {
     FrameBufferConfig frame_buffer;
     CommandQueueConfig command_queue;
     CommandProcessorConfig command_processor;
-    TriangleRasterizerConfig triangle_rasterizer_config;
+    TriangleRasterizerConfig triangle_rasterizer;
 };
 
 ModelConfig load_config(const std::string& path);
