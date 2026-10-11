@@ -1,8 +1,10 @@
 #include "rasterized_scanline.h"
+#include "rgb_color.h"
 #include "triangle_rasterizer.h"
 #include "vertex_2d.h"
 
 #include <algorithm>
+#include <cmath>
 #include <utility>
 
 std::vector<RasterizedScanline> rasterize_triangle(const Vertex2D& v0,
@@ -19,13 +21,15 @@ std::vector<RasterizedScanline> rasterize_triangle(const Vertex2D& v0,
     // area2 == 0 vertices are collinear
     // area2 > 0 clockwise winding
     // area2 < 0 counter clockwise winding
-    const auto dx1 = b.x - a.x;
-    const auto dy1 = b.y - a.y;
+    const int64_t dx1 = static_cast<int64_t>(b.x) - a.x;
+    const int64_t dy1 = static_cast<int64_t>(b.y) - a.y;
 
-    const auto dx2 = c.x - a.x;
-    const auto dy2 = c.y - a.y;
+    const int64_t dx2 = static_cast<int64_t>(c.x) - a.x;
+    const int64_t dy2 = static_cast<int64_t>(c.y) - a.y;
 
-    const auto area2 = dx1 * dy2 - dy1 * dx2;
+    // compute the cross-product, which returns twice the triangles area because it
+    // computes the parallelo gram area
+    const int64_t area2 = dx1 * dy2 - dy1 * dx2;
 
     if (area2 == 0) {
         return {};
@@ -35,6 +39,8 @@ std::vector<RasterizedScanline> rasterize_triangle(const Vertex2D& v0,
     if (area2 < 0) {
         std::swap(b, c);
     }
+
+    const float pos_area2 = std::abs(static_cast<float>(area2));
 
     // compute the bounding triangle
     // clip min to 0 (frame buffer limit)
@@ -98,6 +104,10 @@ std::vector<RasterizedScanline> rasterize_triangle(const Vertex2D& v0,
             const float px = static_cast<float>(x) + 0.5f;
             const float py = static_cast<float>(y) + 0.5f;
 
+            // edge *->* and the pixel center form a triangle
+            // sign e_*: determines inclusion
+            // magnitude e_*: is two times the area of e_* and the pixel center because
+            // the function computes the parallelo gram area through the cross-product
             const float e_ab = edge(a, b, px, py);
             const float e_bc = edge(b, c, px, py);
             const float e_ca = edge(c, a, px, py);
@@ -113,7 +123,30 @@ std::vector<RasterizedScanline> rasterize_triangle(const Vertex2D& v0,
                 if (scanline.pixels.empty()) {
                     scanline.x_start = static_cast<std::size_t>(x);
                 }
-                scanline.pixels.push_back(RGB_WHITE);
+
+                // barycentric color interpolation
+                // compute the weights for each vertex
+                const float weight_a = e_bc / pos_area2;
+                const float weight_b = e_ca / pos_area2;
+                const float weight_c = e_ab / pos_area2;
+
+                // red = weight_a * a.color.red + weight_b * b.color.red + weight_c *
+                // c.color.red green = weight_a * a.color.green + weight_b *
+                // b.color.green + weight_c * c.color.green blue = weight_a *
+                // a.color.blue + weight_b * b.color.blue + weight_c * c.color.blue
+                const auto interpolate = [&](uint8_t color_a, uint8_t color_b,
+                                             uint8_t color_c) {
+                    const float value =
+                        weight_a * color_a + weight_b * color_b + weight_c * color_c;
+                    return static_cast<uint8_t>(
+                        std::clamp(std::lround(value), 0L, 255L));
+                };
+
+                scanline.pixels.push_back(RGBColor{
+                    interpolate(a.color.red, b.color.red, c.color.red),
+                    interpolate(a.color.green, b.color.green, c.color.green),
+                    interpolate(a.color.blue, b.color.blue, c.color.blue),
+                });
             }
         }
 

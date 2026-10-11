@@ -3,10 +3,10 @@
 Goal: replace the stub with a rasterizer that returns clipped, colored scanlines.
 The command processor owns RGB packing, framebuffer writes, and transport timing.
 
-Current output uses solid `RGB_WHITE`. Coverage and scanline integration are
-implemented for ordinary framebuffer coordinates; color interpolation and the
-verification cases below remain pending. Signed area still uses 32-bit arithmetic,
-and edge tests use `float`, so full-range coordinate robustness is not complete.
+Coverage, scanline integration, and barycentric RGB interpolation are implemented.
+Signed-area arithmetic is widened to `int64_t`; edge tests and interpolation still
+use `float`. Compilation, precision, full-range coordinate robustness, and the
+verification cases below remain to be checked or resolved.
 
 ## Coverage and coordinate conventions
 
@@ -15,6 +15,14 @@ and edge tests use `float`, so full-range coordinate robustness is not complete.
 - [x] Sample coverage at pixel centers `(x + 0.5, y + 0.5)`.
 - [ ] Choose arithmetic that avoids overflow across the supported `int32_t`
       coordinate range; widen operands before subtraction and multiplication.
+- [x] Widen coordinate differences before subtraction and compute signed area in
+      `int64_t` for ordinary screen-sized coordinates.
+- [x] Use `float` consistently for project floating-point calculations, including
+      edge values, pixel centers, area conversion, interpolation, and timing inputs.
+- [ ] Define and verify the supported coordinate range for `float` coverage tests;
+      preserve the project-wide `float` convention when addressing precision limits.
+- [ ] Validate framebuffer dimensions before narrowing bounding limits to `int32_t`.
+- [ ] Avoid loop-counter overflow when a bounding limit reaches `INT32_MAX`.
 - [x] Compute signed triangle area and return no scanlines for zero-area triangles.
 - [x] Normalize clockwise and counterclockwise input winding for coverage tests.
 - [x] Compute the bounding rectangle and clip it to framebuffer dimensions before
@@ -22,13 +30,15 @@ and edge tests use `float`, so full-range coordinate robustness is not complete.
 - [x] Require nonzero framebuffer dimensions, validated by module construction.
 - [x] Implement edge-function inside tests.
 - [x] Apply the top-left edge-inclusion rule; verify shared-edge behavior below.
-- [ ] Keep geometric coverage rules separate from color interpolation.
+- [x] Keep geometric coverage rules separate from color interpolation.
 
 ## Color interpolation
 
-- [ ] Compute barycentric weights from edge values and triangle area.
-- [ ] Interpolate red, green, and blue from the three vertex colors.
-- [ ] Define channel rounding and clamp results to the range 0 through 255.
+- [x] Compute barycentric weights from edge values and positive triangle area.
+- [x] Interpolate red, green, and blue from the three vertex colors.
+- [x] Round channels with `std::lround` and clamp results to 0 through 255.
+- [x] Include `<cmath>` explicitly for `std::abs` and `std::lround`, then verify a
+      fresh compilation of the rasterizer.
 - [ ] Preserve constant colors when all vertices have the same color.
 
 ## Scanline output and integration

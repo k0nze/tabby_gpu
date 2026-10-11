@@ -42,7 +42,7 @@ CommandProcessor::CommandProcessor(sc_core::sc_module_name name,
     clock_period_ = clock_period_from_hz(config_.clock_freq_hz);
 
     // compute latency
-    decode_latency_ = clock_period_ * static_cast<double>(config_.decode_cycles);
+    decode_latency_ = clock_period_ * static_cast<float>(config_.decode_cycles);
 }
 
 std::vector<Command> CommandProcessor::read_commands(size_t request_count) {

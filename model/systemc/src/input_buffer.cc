@@ -18,10 +18,9 @@ InputBuffer::InputBuffer(sc_core::sc_module_name name, const InputBufferConfig& 
     clock_period_ = clock_period_from_hz(config_.clock_freq_hz);
 
     // compute latencies
-    read_setup_latency_ =
-        clock_period_ * static_cast<double>(config_.read_setup_cycles);
+    read_setup_latency_ = clock_period_ * static_cast<float>(config_.read_setup_cycles);
     read_word_latency_ =
-        clock_period_ * static_cast<double>(config_.read_cycles_per_word);
+        clock_period_ * static_cast<float>(config_.read_cycles_per_word);
     data_.resize(config_.capacity_bytes);
 
     socket.register_b_transport(this, &InputBuffer::b_transport);
@@ -83,7 +82,7 @@ void InputBuffer::b_transport(tlm::tlm_generic_payload& trans,
 
         const size_t words =
             length / config_.bytes_per_word + (length % config_.bytes_per_word != 0);
-        delay += read_setup_latency_ + read_word_latency_ * static_cast<double>(words);
+        delay += read_setup_latency_ + read_word_latency_ * static_cast<float>(words);
 
     } else if (trans.is_write()) {
         for (size_t i = 0; i < length; i++) {
@@ -92,7 +91,7 @@ void InputBuffer::b_transport(tlm::tlm_generic_payload& trans,
 
         const size_t words =
             length / config_.bytes_per_word + (length % config_.bytes_per_word != 0);
-        delay += read_setup_latency_ + read_word_latency_ * static_cast<double>(words);
+        delay += read_setup_latency_ + read_word_latency_ * static_cast<float>(words);
 
     } else {
         trans.set_response_status(tlm::TLM_COMMAND_ERROR_RESPONSE);

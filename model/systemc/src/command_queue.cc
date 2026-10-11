@@ -22,13 +22,12 @@ CommandQueue::CommandQueue(sc_core::sc_module_name name,
 
     // compute latencies
     write_setup_latency_ =
-        clock_period_ * static_cast<double>(config_.write_setup_cycles);
+        clock_period_ * static_cast<float>(config_.write_setup_cycles);
     write_command_latency_ =
-        clock_period_ * static_cast<double>(config_.write_cycles_per_command);
-    read_setup_latency_ =
-        clock_period_ * static_cast<double>(config_.read_setup_cycles);
+        clock_period_ * static_cast<float>(config_.write_cycles_per_command);
+    read_setup_latency_ = clock_period_ * static_cast<float>(config_.read_setup_cycles);
     read_command_latency_ =
-        clock_period_ * static_cast<double>(config_.read_cycles_per_command);
+        clock_period_ * static_cast<float>(config_.read_cycles_per_command);
 
     socket.register_b_transport(this, &CommandQueue::b_transport);
 }
@@ -73,7 +72,7 @@ void CommandQueue::b_transport(CommandPayload& trans, sc_core::sc_time& delay) {
         }
 
         delay += write_setup_latency_ +
-                 write_command_latency_ * static_cast<double>(trans.commands.size());
+                 write_command_latency_ * static_cast<float>(trans.commands.size());
 
         trans.response = CommandPayload::Response::Ok;
         return;
@@ -106,7 +105,7 @@ void CommandQueue::b_transport(CommandPayload& trans, sc_core::sc_time& delay) {
         trans.commands = std::move(commands);
 
         delay +=
-            read_setup_latency_ + read_command_latency_ * static_cast<double>(count);
+            read_setup_latency_ + read_command_latency_ * static_cast<float>(count);
 
         trans.response = CommandPayload::Response::Ok;
         return;

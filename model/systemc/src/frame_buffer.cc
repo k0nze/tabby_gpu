@@ -26,9 +26,9 @@ FrameBuffer::FrameBuffer(sc_core::sc_module_name name, const FrameBufferConfig& 
 
     // compute latencies
     write_setup_latency_ =
-        clock_period_ * static_cast<double>(config_.write_setup_cycles);
+        clock_period_ * static_cast<float>(config_.write_setup_cycles);
     write_word_latency_ =
-        clock_period_ * static_cast<double>(config_.write_cycles_per_word);
+        clock_period_ * static_cast<float>(config_.write_cycles_per_word);
     data_.resize(config_.width * config_.height * RGB_COLOR_SIZE);
 
     socket.register_b_transport(this, &FrameBuffer::b_transport);
@@ -78,7 +78,7 @@ void FrameBuffer::b_transport(FrameBufferPayload& trans, sc_core::sc_time& delay
     if (trans.operation == FrameBufferPayload::Operation::Clear) {
         clear();
 
-        delay += clock_period_ * static_cast<double>(config_.clear_cycles);
+        delay += clock_period_ * static_cast<float>(config_.clear_cycles);
         trans.set_response_status(tlm::TLM_OK_RESPONSE);
         return;
     }
@@ -123,7 +123,7 @@ void FrameBuffer::b_transport(FrameBufferPayload& trans, sc_core::sc_time& delay
 
     const size_t words =
         length / config_.bytes_per_word + (length % config_.bytes_per_word != 0);
-    delay += write_setup_latency_ + write_word_latency_ * static_cast<double>(words);
+    delay += write_setup_latency_ + write_word_latency_ * static_cast<float>(words);
 
     trans.set_response_status(tlm::TLM_OK_RESPONSE);
 }
