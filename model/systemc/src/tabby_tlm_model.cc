@@ -12,10 +12,15 @@ TabbyTLMModel::TabbyTLMModel(sc_core::sc_module_name name, CommandProcessor& cmd
 void TabbyTLMModel::run() {
     auto start_time = sc_core::sc_time_stamp();
 
-    const auto cmds = cmd_proc_.read_commands(4);
-
-    for (const auto& cmd : cmds) {
-        cmd_proc_.process_command(cmd);
+    // Drain the demo queue in batches so every submitted triangle is processed.
+    while (true) {
+        const auto cmds = cmd_proc_.read_commands(4);
+        if (cmds.empty()) {
+            break;
+        }
+        for (const auto& cmd : cmds) {
+            cmd_proc_.process_command(cmd);
+        }
     }
 
     /*

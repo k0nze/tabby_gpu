@@ -36,7 +36,7 @@ std::vector<RasterizedScanline> rasterize_triangle(const Triangle2D& triangle,
  CommandProcessor                       TriangleRasterizer::run()
  (consumer thread)                      (producer thread)
         |                                      |
-        | submit(): wait(idle_) while busy_     |
+        | submit(): wait(idle_) while busy_    |
         | pending_triangle_ = triangle         |
         |---- notify(work_available_) -------->|
         |                               setup wait; compute geometry
@@ -61,7 +61,7 @@ std::vector<RasterizedScanline> rasterize_triangle(const Triangle2D& triangle,
         |<---- notify(output_available_) ------|
         | next_scanline(): consume remaining rows
         | FIFO empty && output_complete_       |
-        | busy_ = false; notify(idle_)          |
+        | busy_ = false; notify(idle_)         |
         | return nullopt                       |
         |                                      |
    triangle command complete              ready for submit()

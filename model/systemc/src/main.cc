@@ -10,6 +10,7 @@
 #include "triangle_2d_io.h"
 #include "triangle_rasterizer.h"
 
+#include <array>
 #include <iostream>
 #include <string>
 #include <systemc>
@@ -42,18 +43,25 @@ int sc_main(int argc, char* argv[]) {
 
         constexpr uint64_t triangle_address = 0x100;
 
-        const Triangle2D triangle{
-            Vertex2D{600, 80, RGB_RED},
-            Vertex2D{160, 360, RGB_GREEN},
-            Vertex2D{480, 360, RGB_BLUE},
+        const std::array<Triangle2D, 4> triangles{
+            Triangle2D{{600, 80, RGB_RED}, {160, 360, RGB_GREEN}, {480, 360, RGB_BLUE}},
+            Triangle2D{
+                {40, 40, RGB_YELLOW}, {220, 60, RGB_CYAN}, {80, 220, RGB_MAGENTA}},
+            Triangle2D{
+                {360, 180, RGB_WHITE}, {520, 320, RGB_RED}, {580, 200, RGB_BLUE}},
+            Triangle2D{
+                {-40, 380, RGB_CYAN}, {180, 420, RGB_GREEN}, {60, 520, RGB_YELLOW}},
         };
-        const auto triangle_bytes = encode_triangle_2d(triangle);
-        for (std::size_t i = 0; i < triangle_bytes.size(); ++i) {
-            input_buffer.write(triangle_address + i, triangle_bytes[i]);
-        }
-
         cmd_queue.push(CommandClearFrameBuffer{});
-        cmd_queue.push(CommandDrawTriangle{triangle_address});
+
+        for (std::size_t index = 0; index < triangles.size(); ++index) {
+            const auto triangle_bytes = encode_triangle_2d(triangles[index]);
+            const auto address = triangle_address + index * triangle_bytes.size();
+            for (std::size_t i = 0; i < triangle_bytes.size(); ++i) {
+                input_buffer.write(address + i, triangle_bytes[i]);
+            }
+            cmd_queue.push(CommandDrawTriangle{address});
+        }
 
         sc_core::sc_start();
 
