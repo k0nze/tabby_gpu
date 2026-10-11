@@ -4,9 +4,9 @@
 #include "rasterized_scanline.h"
 #include "rgb_color.h"
 #include "timing.h"
+#include "triangle_2d_io.h"
 #include "triangle_rasterizer.h"
 #include "vertex_2d.h"
-#include "vertex_2d_io.h"
 
 #include <cstddef>
 #include <cstdint>
@@ -172,16 +172,11 @@ void CommandProcessor::process_command(const Command& command) {
             } else if constexpr (std::is_same_v<T, CommandDrawTriangle>) {
                 const auto bytes = read_input_buffer_bytes(
                     cmd.vertices_2d_start_address, 3 * VERTEX_2D_SIZE);
-                const std::span<const uint8_t> data{bytes};
+                const auto triangle = decode_triangle_2d(bytes);
 
-                const auto v0 = decode_vertex_2d(data.subspan(0, VERTEX_2D_SIZE));
-                const auto v1 =
-                    decode_vertex_2d(data.subspan(VERTEX_2D_SIZE, VERTEX_2D_SIZE));
-                const auto v2 =
-                    decode_vertex_2d(data.subspan(2 * VERTEX_2D_SIZE, VERTEX_2D_SIZE));
-
-                auto rasterized_scanlines = rasterize_triangle(
-                    v0, v1, v2, frame_buffer_width_, frame_buffer_height_);
+                auto rasterized_scanlines =
+                    rasterize_triangle(triangle.v0, triangle.v1, triangle.v2,
+                                       frame_buffer_width_, frame_buffer_height_);
 
                 for (auto& rasterized_scanline : rasterized_scanlines) {
                     // compute frame buffer address

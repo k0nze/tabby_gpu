@@ -59,6 +59,7 @@ add_executable(
     src/input_buffer.cc
     src/timing.cc
     src/vertex_2d_io.cc
+    src/triangle_2d_io.cc
     src/command_queue.cc
     src/command_processor.cc
     src/tabby_tlm_model.cc

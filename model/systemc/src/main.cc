@@ -7,7 +7,7 @@
 #include "input_buffer.h"
 #include "rgb_color.h"
 #include "tabby_tlm_model.h"
-#include "vertex_2d_io.h"
+#include "triangle_2d_io.h"
 
 #include <iostream>
 #include <string>
@@ -35,16 +35,20 @@ int sc_main(int argc, char* argv[]) {
         cmd_proc.frame_buffer_socket.bind(frame_buffer.socket);
         cmd_proc.command_queue_socket.bind(cmd_queue.socket);
 
-        constexpr uint64_t vertices_address = 0x100;
+        constexpr uint64_t triangle_address = 0x100;
 
-        write_vertex_2d(input_buffer, vertices_address, Vertex2D{600, 80, RGB_RED});
-        write_vertex_2d(input_buffer, vertices_address + VERTEX_2D_SIZE,
-                        Vertex2D{160, 360, RGB_GREEN});
-        write_vertex_2d(input_buffer, vertices_address + 2 * VERTEX_2D_SIZE,
-                        Vertex2D{480, 360, RGB_BLUE});
+        const Triangle2D triangle{
+            Vertex2D{600, 80, RGB_RED},
+            Vertex2D{160, 360, RGB_GREEN},
+            Vertex2D{480, 360, RGB_BLUE},
+        };
+        const auto triangle_bytes = encode_triangle_2d(triangle);
+        for (std::size_t i = 0; i < triangle_bytes.size(); ++i) {
+            input_buffer.write(triangle_address + i, triangle_bytes[i]);
+        }
 
         cmd_queue.push(CommandClearFrameBuffer{});
-        cmd_queue.push(CommandDrawTriangle{vertices_address});
+        cmd_queue.push(CommandDrawTriangle{triangle_address});
 
         sc_core::sc_start();
 
