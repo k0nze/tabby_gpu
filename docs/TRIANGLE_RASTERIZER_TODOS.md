@@ -8,6 +8,38 @@ Signed-area arithmetic is widened to `int64_t`; edge tests and interpolation sti
 use `float`. Compilation, precision, full-range coordinate robustness, and the
 verification cases below remain to be checked or resolved.
 
+Next priority: model pipelined rasterization with scanlines becoming available
+incrementally and overlapping timed framebuffer writes. Verification is deferred
+at the user's request; the unchecked verification items remain outstanding.
+
+## Next: pipelined timing and scanline delivery
+
+- [ ] Define rasterizer clock frequency, setup cost, pipeline latency to the first
+      result, and initiation interval (cycles between accepted candidate pixels).
+- [ ] Keep pipeline latency separate from throughput; account for all tested
+      candidate pixels, including those rejected by coverage tests.
+- [ ] Keep coverage and interpolation independent of SystemC; add a simulation
+      wrapper that reports and schedules scanline availability incrementally.
+- [ ] Initially release a scanline after its candidate pixels have been processed,
+      including pipeline drain needed for its final result.
+- [ ] Advance modeled computation through rows with no covered pixels even though
+      those rows produce no framebuffer writes.
+- [ ] Add a bounded FIFO carrying completed scanlines between rasterization and
+      framebuffer writing.
+- [ ] Run rasterization and the framebuffer writer in separate `SC_THREAD`s so
+      computation overlaps annotated framebuffer write delays.
+- [ ] Stall rasterizer progress when the FIFO is full; resume when the writer
+      frees space, preserving the supported pipeline buffering behavior.
+- [ ] Preserve scanline order and issue one timed write per contiguous covered run.
+- [ ] Signal triangle completion only after the final framebuffer write completes;
+      define completion for degenerate and fully offscreen triangles as well.
+- [ ] Define whether command processing waits for triangle completion before
+      starting the next command, preserving ordering with clear operations.
+- [ ] Account for overlap rather than adding whole-triangle computation time to
+      all framebuffer write times; let the slower stage limit sustained throughput.
+- [ ] Expose progress and command completion for future interactive stepping and
+      the shared SystemC/RTL backend interface.
+
 ## Coverage and coordinate conventions
 
 - [x] Define screen coordinates: origin at the top-left, x increasing rightward,
@@ -50,8 +82,8 @@ verification cases below remain to be checked or resolved.
 - [x] Connect real rasterizer output to the existing scanline encoder and timed
       writes in `CommandProcessor`.
 - [ ] Export the demo triangle to PNG and inspect its coverage and color gradient.
-- [ ] Define rasterizer computation latency separately from memory-access latency
-      when extending the timing model.
+- [ ] Implement computation timing separately from memory-access latency using
+      the pipelined timing plan above.
 
 ## Verification
 
@@ -69,7 +101,7 @@ verification cases below remain to be checked or resolved.
 ## Later improvements
 
 - [ ] Update edge functions incrementally across rows and columns.
-- [ ] Consider incremental scanline production for reduced temporary storage and
-      future pipeline timing.
+- [ ] Refine incremental scanline production to smaller pixel batches if needed
+      after the scanline pipeline is implemented.
 - [ ] Compare coverage and interpolation with the RTL rasterizer using shared
       reference cases.

@@ -1,5 +1,6 @@
 #include "command_processor.h"
 #include "config_loader.h"
+#include "triangle_rasterizer.h"
 #include "yaml-cpp/node/node.h"
 
 #include <stdexcept>
@@ -72,6 +73,22 @@ CommandProcessorConfig load_command_processor_config(const YAML::Node& root) {
         read_unsigned<uint64_t>(buffer, "decode_cycles"),
     };
 }
+
+TriangleRasterizerConfig load_triangle_rasterizer_config(const YAML::Node& root) {
+    const auto buffer = root["triangle_rasterizer"];
+    if (!buffer.IsMap()) {
+        throw std::invalid_argument(
+            "Configuration requires a triangle_rasterizer mapping");
+    }
+
+    return {
+        read_unsigned<size_t>(buffer, "scanline_fifo_capacity_bytes"),
+        read_unsigned<uint64_t>(buffer, "clock_freq_hz"),
+        read_unsigned<uint64_t>(buffer, "setup_cycles"),
+        read_unsigned<uint64_t>(buffer, "pipeline_latency_cycles"),
+        read_unsigned<uint64_t>(buffer, "pixel_input_interval_cycles"),
+    };
+}
 }  // namespace
 
 ModelConfig load_config(const std::string& path) {
@@ -80,5 +97,6 @@ ModelConfig load_config(const std::string& path) {
         throw std::invalid_argument("Configuration root must be a mapping");
     }
     return {load_input_buffer_config(root), load_frame_buffer_config(root),
-            load_command_queue_config(root), load_command_processor_config(root)};
+            load_command_queue_config(root), load_command_processor_config(root),
+            load_triangle_rasterizer_config(root)};
 }

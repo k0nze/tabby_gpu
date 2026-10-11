@@ -6,6 +6,14 @@
 #include <cstddef>
 #include <vector>
 
+struct TriangleRasterizerConfig {
+    size_t scanline_fifo_capacity_bytes;
+    uint64_t clock_freq_hz;
+    uint64_t setup_cycles;
+    uint64_t pipeline_latency_cycles;
+    uint64_t pixel_input_interval_cycles;
+};
+
 // Return covered scanlines in increasing y order, clipped to the framebuffer.
 // The command processor handles packing pixels and timed framebuffer writes.
 std::vector<RasterizedScanline> rasterize_triangle(const Vertex2D& v0,
