@@ -37,11 +37,11 @@ int sc_main(int argc, char* argv[]) {
 
         constexpr uint64_t vertices_address = 0x100;
 
-        write_vertex_2d(input_buffer, vertices_address, Vertex2D{320, 80, {255, 0, 0}});
+        write_vertex_2d(input_buffer, vertices_address, Vertex2D{600, 80, RGB_RED});
         write_vertex_2d(input_buffer, vertices_address + VERTEX_2D_SIZE,
-                        Vertex2D{160, 360, {0, 255, 0}});
+                        Vertex2D{160, 360, RGB_GREEN});
         write_vertex_2d(input_buffer, vertices_address + 2 * VERTEX_2D_SIZE,
-                        Vertex2D{480, 360, {0, 0, 255}});
+                        Vertex2D{480, 360, RGB_BLUE});
 
         cmd_queue.push(CommandClearFrameBuffer{});
         cmd_queue.push(CommandDrawTriangle{vertices_address});

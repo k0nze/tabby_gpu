@@ -206,6 +206,8 @@ void CommandProcessor::process_command(const Command& command) {
                     // encode rasterized scanline
                     const auto scanline_bytes =
                         encode_rasterized_scanline(rasterized_scanline);
+
+                    // write scanline to frame buffer
                     write_frame_buffer_bytes(address, scanline_bytes);
                 }
             }
